@@ -8,6 +8,8 @@ from tqdm.notebook import tqdm
 import time
 import re
 import google.generativeai as genai
+import numpy as np
+
 
 # Mount Google Drive
 drive.mount('/content/drive')
@@ -113,11 +115,14 @@ class TokenReplacementPolicy:
         medical_relevance = self.calculate_medical_relevance(context)
         complexity = self.calculate_complexity(context)
         
-        score = (self.alpha * medical_relevance + 
-                self.beta * complexity + 
-                self.gamma * gemini_confidence)
+        raw_score = (self.alpha * medical_relevance + 
+                    self.beta * complexity + 
+                    self.gamma * gemini_confidence)
         
-        return score > self.eta
+        probability = 1 / (1 + np.exp(-raw_score)) #sigmoid function
+        
+        return probability > self.eta
+
 
 def generate_collaborative_response(scenario, policy):
     response = ""
